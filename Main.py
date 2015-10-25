@@ -5,24 +5,27 @@ buf = ""
 mLine = 1
 mRow = 0
 currentState = 'A'
-__letterSet__  = { 'a','b','c','d','e','f','g','h','i','j','k','l','m',
+__letterSet__  = [ 'a','b','c','d','e','f','g','h','i','j','k','l','m',
 				'n','o','p','q','r','s','t','u','v','w','x','y','z',
 				'A','B','C','D','E','F','G','H','I','J','K','L','M',
-				'N','O','P','Q','R','S','T','U','V','W','X','Y','Z',}
-__digitSet__ = {'0','1','2','3','4','5','6','7','8','9'}
-__blankCharSet__ = {' ', '\n', '\t'}
-__switchCharSet__ = {'b', 'n', 't', '\'', '\"','\\'}
+				'N','O','P','Q','R','S','T','U','V','W','X','Y','Z',]
+__digitSet__ = ['0','1','2','3','4','5','6','7','8','9']
+__blankCharSet__ = [' ', '\n', '\t']
+__switchCharSet__ = ['b', 'n', 't', '\'', '\"','\\']
 # 由ANSI标准定义的C语言关键字共32个：
-__keywordSet__ = {'auto','double','int','struct','break','else','long','switch','case','enum',
+__keywordSet__ = ['auto','double','int','struct','break','else','long','switch','case','enum',
 				'register','typedef','char','extern','return','union','const','float','short','unsigned',
 				'continue','for','signed','void','default','goto','sizeof','volatile','do','if',
 				'while','static'
-				}
-__boardSet__ = {';',',', '(', ')', '.', '{', '}','[',']'}
+				]
+__boardSet__ = [';',',', '(', ')', '.', '{', '}','[',']']
 console_msg=""
 result=[]
 __TOKENIZE_SUCCESS__ = 0
 __TOKEN_ERROR__ = 1
+
+
+
 
 
 def compilerFail(status):
@@ -32,7 +35,7 @@ def compilerFail(status):
 	global console_msg
 	global currentState
 
-	console_msg = console_msg + "编译于第 "+str(mRow)+" 行, 第 "+str(mLine)+" 列失败,因为:"+status+'\n'
+	console_msg = console_msg + u"编译于第 "+str(mRow)+u" 行, 第 "+str(mLine)+u" 列失败,因为:"+status+'\n'
 	currentState='A'
 	buf = ""
 
@@ -53,7 +56,7 @@ def tokenizer(ch):
 
 	while True:
 		if currentState == 'A':
-			if(ch==' ' or ch=='\n' or ch=='\t'):
+			if(ch in __blankCharSet__ ):
 				currentState = 'A'
 				return
 			elif(ch in __letterSet__ or ch=='_'):
@@ -119,7 +122,7 @@ def tokenizer(ch):
 				return
 			elif(ch in __boardSet__):
 				buf = ""
-				console_msg = console_msg+'('+ch+' , 界符)\n'
+				console_msg = console_msg+'('+ch+u' , 界符)\n'
 				result.append(ch)
 				currentState='A'
 				return
@@ -127,7 +130,7 @@ def tokenizer(ch):
 				buf = buf + ch
 				currentState='$'
 			else:
-				compilerFail('不可识别的字符')
+				compilerFail(u'不可识别的字符')
 				return
 
 		##############     状态B         #################
@@ -138,10 +141,10 @@ def tokenizer(ch):
 				return
 			else:#可接受状态
 				if (buf in __keywordSet__):
-					console_msg = console_msg + '('+buf+' , 关键字)\n'
+					console_msg = console_msg + '('+buf+u' , 关键字)\n'
 					result.append(buf)
 				else:
-					console_msg = console_msg + '('+buf+' , 标识符)\n'
+					console_msg = console_msg + '('+buf+u' , 标识符)\n'
 					result.append('IDN')
 				buf = ""
 				currentState = 'A'
@@ -159,7 +162,7 @@ def tokenizer(ch):
 				currentState = 'P'
 				return
 			else:#可接受状态
-				console_msg = console_msg + '('+ buf + ' , 整数常量)\n'
+				console_msg = console_msg + '('+ buf + u' , 整数常量)\n'
 				result.append('INUM')
 				buf = ""
 				currentState = 'A'
@@ -176,7 +179,7 @@ def tokenizer(ch):
 				currentState = 'F'
 				return
 			else:
-				compilerFail('空白或无效的字符')
+				compilerFail(u'空白或无效的字符')
 				return
 
 		##############     状态E        #################
@@ -186,12 +189,12 @@ def tokenizer(ch):
 				currentState = 'H'
 				continue
 			else:
-				compilerFail('字符常量长度大于一')
+				compilerFail(u'字符常量长度大于一')
 				return
 
 		##############     状态H        #################
 		elif currentState == 'H':
-			console_msg = console_msg + '(' + buf+ ' ,字符常量)\n'
+			console_msg = console_msg + '(' + buf+ u' ,字符常量)\n'
 			result.append['CH']
 			buf = ""
 			currentState = 'A'
@@ -204,7 +207,7 @@ def tokenizer(ch):
 				currentState = 'E'
 				return
 			else:
-				compilerFail('无效的转义字符')		
+				compilerFail(u'无效的转义字符')		
 				return	
 
 		##############     状态G         #################
@@ -228,12 +231,12 @@ def tokenizer(ch):
 				currentState = 'G'
 				return
 			else:
-				compilerFail('无效的转义字符')	
+				compilerFail(u'无效的转义字符')	
 				return
 
 		##############     状态J         #################
 		elif currentState == 'J':
-			console_msg = console_msg + '(' + buf+ ' ,字符串常量)\n'
+			console_msg = console_msg + '(' + buf+ u' ,字符串常量)\n'
 			result.append('STR')
 			buf = ""
 			currentState = 'A'
@@ -254,7 +257,7 @@ def tokenizer(ch):
 				currentState = 'B='
 				return
 			else:
-				console_msg = console_msg+'('+buf+' ,运算符)\n'
+				console_msg = console_msg+'('+buf+u' ,运算符)\n'
 				result.append(buf)
 				buf = ""
 				currentState = 'A'
@@ -297,7 +300,7 @@ def tokenizer(ch):
 				currentState = 'Q'
 				return
 			else:
-				compilerFail('无效的浮点数')
+				compilerFail(u'无效的浮点数')
 				return
 
 		##############     状态Q         #################
@@ -307,7 +310,7 @@ def tokenizer(ch):
 				currentState='Q'
 				return
 			else:
-				console_msg = console_msg+'('+buf+' , 浮点数常量)\n'
+				console_msg = console_msg+'('+buf+u' , 浮点数常量)\n'
 				result.append('FNUM')
 				buf=""
 				currentState='A'
@@ -320,7 +323,7 @@ def tokenizer(ch):
 				currentState='B+'
 				return
 			else:
-				console_msg = console_msg+'('+buf+' ,操作符)\n'
+				console_msg = console_msg+'('+buf+u' ,操作符)\n'
 				result.append(buf)
 				buf=""
 				currentState = 'A'
@@ -328,7 +331,7 @@ def tokenizer(ch):
 
 		##############     状态B+         #################
 		elif currentState=='B+':
-			console_msg = console_msg+'('+buf+' ,操作符)\n'
+			console_msg = console_msg+'('+buf+u' ,操作符)\n'
 			result.append(buf)
 			buf = ""
 			currentState = 'A'
@@ -341,7 +344,7 @@ def tokenizer(ch):
 				currentState='B-'
 				return
 			else:
-				console_msg = console_msg+'('+buf+' ,操作符)\n'
+				console_msg = console_msg+'('+buf+u' ,操作符)\n'
 				result.append(buf)
 				buf=""
 				currentState = 'A'
@@ -349,7 +352,7 @@ def tokenizer(ch):
 
 		##############     状态B-         #################
 		elif currentState=='B-':
-			console_msg = console_msg+'('+buf+' ,操作符)\n'
+			console_msg = console_msg+'('+buf+u' ,操作符)\n'
 			result.append(buf)
 			buf = ""
 			currentState = 'A'
@@ -362,7 +365,7 @@ def tokenizer(ch):
 				currentState='B*'
 				return
 			else:
-				console_msg = console_msg+'('+buf+' ,操作符)\n'
+				console_msg = console_msg+'('+buf+u' ,操作符)\n'
 				result.append(buf)
 				buf=""
 				currentState = 'A'
@@ -370,7 +373,7 @@ def tokenizer(ch):
 
 		##############     状态B*         #################
 		elif currentState=='B(':
-			console_msg = console_msg+'('+buf+' ,操作符)\n'
+			console_msg = console_msg+'('+buf+u' ,操作符)\n'
 			result.append(buf)
 			buf = ""
 			currentState = 'A'
@@ -383,7 +386,7 @@ def tokenizer(ch):
 				currentState='B&'
 				return
 			else:
-				console_msg = console_msg+'('+buf+' ,操作符)\n'
+				console_msg = console_msg+'('+buf+u' ,操作符)\n'
 				result.append(buf)
 				buf=""
 				currentState = 'A'
@@ -391,7 +394,7 @@ def tokenizer(ch):
 
 		##############     状态B&         #################
 		elif currentState=='B&':
-			console_msg = console_msg+'('+buf+' ,操作符)\n'
+			console_msg = console_msg+'('+buf+u' ,操作符)\n'
 			result.append(buf)
 			buf = ""
 			currentState = 'A'
@@ -404,7 +407,7 @@ def tokenizer(ch):
 				currentState='B^'
 				return
 			else:
-				console_msg = console_msg+ '('+buf+' ,操作符)\n'
+				console_msg = console_msg+ '('+buf+u' ,操作符)\n'
 				result.append(buf)
 				buf=""
 				currentState = 'A'
@@ -412,7 +415,7 @@ def tokenizer(ch):
 
 		##############     状态B^         #################
 		elif currentState=='B^':
-			console_msg = console_msg+'('+buf+' ,操作符)\n'
+			console_msg = console_msg+'('+buf+u' ,操作符)\n'
 			result.append(buf)
 			buf = ""
 			currentState = 'A'
@@ -425,7 +428,7 @@ def tokenizer(ch):
 				currentState='B|'
 				return
 			else:
-				console_msg = console_msg+ '('+buf+' ,操作符)\n'
+				console_msg = console_msg+ '('+buf+u' ,操作符)\n'
 				result.append(buf)
 				buf=""
 				currentState = 'A'
@@ -433,7 +436,7 @@ def tokenizer(ch):
 
 		##############     状态B|         #################
 		elif currentState=='B|':
-			console_msg = console_msg+'('+buf+' ,操作符)\n'
+			console_msg = console_msg+'('+buf+u' ,操作符)\n'
 			result.append(buf)
 			buf = ""
 			currentState = 'A'
@@ -446,7 +449,7 @@ def tokenizer(ch):
 				currentState='B='
 				return
 			else:
-				console_msg = console_msg+ '('+buf+' ,操作符)\n'
+				console_msg = console_msg+ '('+buf+u' ,操作符)\n'
 				result.append(buf)
 				buf=""
 				currentState = 'A'
@@ -454,7 +457,7 @@ def tokenizer(ch):
 
 		##############     状态B=         #################
 		elif currentState=='B=':
-			console_msg = console_msg+'('+buf+' ,操作符)\n'
+			console_msg = console_msg+'('+buf+u' ,操作符)\n'
 			result.append(buf)
 			buf = ""
 			currentState = 'A'
@@ -467,7 +470,7 @@ def tokenizer(ch):
 				currentState='B!'
 				return
 			else:
-				console_msg = console_msg+ '('+buf+' ,操作符)\n'
+				console_msg = console_msg+ '('+buf+u' ,操作符)\n'
 				result.append(buf)
 				buf=""
 				currentState = 'A'
@@ -475,7 +478,7 @@ def tokenizer(ch):
 
 		##############     状态B!         #################
 		elif currentState=='B!':
-			console_msg = console_msg+'('+buf+' ,操作符)\n'
+			console_msg = console_msg+'('+buf+u' ,操作符)\n'
 			result.append(buf)
 			buf = ""
 			currentState = 'A'
@@ -488,7 +491,7 @@ def tokenizer(ch):
 				currentState='B>'
 				return
 			else:
-				console_msg = console_msg+ '('+buf+' ,操作符)\n'
+				console_msg = console_msg+ '('+buf+u' ,操作符)\n'
 				result.append(buf)
 				buf=""
 				currentState = 'A'
@@ -496,7 +499,7 @@ def tokenizer(ch):
 
 		##############     状态B>         #################
 		elif currentState=='B!':
-			console_msg = console_msg+'('+buf+' ,操作符)\n'
+			console_msg = console_msg+'('+buf+u' ,操作符)\n'
 			result.append(buf)
 			buf = ""
 			currentState = 'A'
@@ -509,7 +512,7 @@ def tokenizer(ch):
 				currentState='B<'
 				return
 			else:
-				console_msg = console_msg+ '('+buf+' ,操作符)\n'
+				console_msg = console_msg+ '('+buf+u' ,操作符)\n'
 				result.append(buf)
 				buf=""
 				currentState = 'A'
@@ -517,7 +520,7 @@ def tokenizer(ch):
 
 		##############     状态B<         #################
 		elif currentState=='B!':
-			console_msg = console_msg+'('+buf+' ,操作符)\n'
+			console_msg = console_msg+'('+buf+u' ,操作符)\n'
 			result.append(buf)
 			buf = ""
 			currentState = 'A'
@@ -525,7 +528,7 @@ def tokenizer(ch):
 		
 		##############     状态$         #################
 		elif currentState=='$':
-			console_msg = console_msg+'('+buf+' ,终结符)\n'
+			console_msg = console_msg+'('+buf+u' ,终结符)\n'
 			result.append(buf)
 			buf = ""
 			currentState = 'A'

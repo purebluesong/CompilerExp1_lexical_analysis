@@ -87,6 +87,15 @@ def defaultD():
 def defaultE():
 	compilerFail(u'字符常量长度大于一')
 
+def defaultF():
+	compilerFail(u'无效的转义字符')
+
+def endH_A():
+	global result
+	make_consol_msg_buf(u'字符常量')
+	result.append('CH')
+
+
 state_converter = {
 	'A':[###################   状态A   #############
 		(True,__blankCharSet__		,[],'A'),
@@ -127,15 +136,22 @@ state_converter = {
 		(True,['\''] 				,[buffadd],'H'),
 		('default',)
 		],
-	'E':[
-		(True,['\\'] 				,[buffadd],'F'),
+	'F':[
+		(True,__switchCharSet__		,[buffadd],'E'),
+		('default',[] 				,[defaultF],'A'),
 		],
-	'E':[
-		(True,['\\'] 				,[buffadd],'F'),
+	'G':[
+		(False,['\\','\"'] 			,[buffadd],'G'),
+		(True,['\\'] 				,[buffadd],'I'),
+		(True,['\"'] 				,[buffadd],'J'),
 		],
-	'E':[
-		(True,['\\'] 				,[buffadd],'F'),
+	'H':[
+		(False,[] 					,[endH_A,buffclr],'A'),
 		],
+
+
+
+
 	'E':[
 		(True,['\\'] 				,[buffadd],'F'),
 		],

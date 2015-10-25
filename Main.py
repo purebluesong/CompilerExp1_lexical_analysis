@@ -1,7 +1,6 @@
 #coding:utf-8
-
-
 buf = ""
+ch = ''
 mLine = 1
 mRow = 0
 currentState = 'A'
@@ -40,9 +39,153 @@ def compilerFail(status):
 	buf = ""
 
 
-#this method could rewrite by state machine
-def tokenizer(ch):
+
+def buffadd():
+	global buf,ch
+	buf += ch
+
+def buffclr():
 	global buf
+	buf = ''
+
+def make_consol_msg(flag):
+	global console_msg,ch
+	console_msg += '(\t' + ch + '\t, '+flag+'\t)\n' 
+
+def make_consol_msg_buf(flag):
+	global console_msg,buf
+	console_msg += '(\t' + buf + '\t, '+flag+'\t)\n' 
+
+def resultadd():
+	global result,ch
+	result.append(ch)
+
+
+def endA_board():
+	make_consol_msg(u'界符')
+
+def defaultA():
+	compilerFail(u'不可识别的字符')
+
+def defaultB():
+	global buf,result
+	if (buf in __keywordSet__):
+		make_consol_msg_buf(u'关键字')
+		result.append(buf)
+	else:
+		make_consol_msg_buf(u'标识符')
+		result.append('IDN')
+
+def defaultC():
+	global result
+	make_consol_msg_buf(u'整数常量')
+	result.append('INUM')
+
+def defaultD():
+	compilerFail(u'空白或无效的字符')
+
+def defaultE():
+	compilerFail(u'字符常量长度大于一')
+
+state_converter = {
+	'A':[###################   状态A   #############
+		(True,__blankCharSet__		,[],'A'),
+		(True,__letterSet__ + [' ']	,[buffadd],'B'),
+		(True,__digitSet__ 			,[buffadd],'C'),
+		(True,['\''] 				,[buffadd],'D'),
+		(True,['\"']				,[buffadd],'G'),
+		(True,['/']		 			,[buffadd],'K'),
+		(True,['+']		 			,[buffadd],'A+'),
+		(True,['-']		 			,[buffadd],'A-'),
+		(True,['*']		 			,[buffadd],'A*'),
+		(True,['&']		 			,[buffadd],'A&'),
+		(True,['^']		 			,[buffadd],'A^'),
+		(True,['|']		 			,[buffadd],'A|'),
+		(True,['=']		 			,[buffadd],'A='),
+		(True,['!']		 			,[buffadd],'A!'),
+		(True,['>']		 			,[buffadd],'A>'),
+		(True,['<']		 			,[buffadd],'A<'),
+		(True,__boardSet__ 			,[buffclr,endA_board,resultadd],'A'),
+		(True,['$']					,[buffadd],'$')
+		('default',[]				,[defaultA],'A')
+		],
+	'B':[###################   状态B   #############
+		(True,['_']+__letterSet__+__digitSet__	,[buffadd],'B'),
+		('default',[]				,[defaultB,buffclr],'_A')
+		],
+	'C':[###################   状态C   #############
+		(True,__digitSet__ 			,[buffadd],'C'),
+		(True,['.'] 				,[buffadd],'P'),
+		('default',[] 				,[defaultC,buffclr],'_A'),
+		],
+	'D':[
+		(False,['\'','\\']			,[buffadd],'E'),
+		(True,['\\'] 				,[buffadd],'F'),
+		('default',[] 				,[defaultD],'A'),
+		],
+	'E':[
+		(True,['\''] 				,[buffadd],'H'),
+		('default',)
+		],
+	'E':[
+		(True,['\\'] 				,[buffadd],'F'),
+		],
+	'E':[
+		(True,['\\'] 				,[buffadd],'F'),
+		],
+	'E':[
+		(True,['\\'] 				,[buffadd],'F'),
+		],
+	'E':[
+		(True,['\\'] 				,[buffadd],'F'),
+		],
+	'E':[
+		(True,['\\'] 				,[buffadd],'F'),
+		],
+	'E':[
+		(True,['\\'] 				,[buffadd],'F'),
+		],
+	'E':[
+		(True,['\\'] 				,[buffadd],'F'),
+		],
+	'E':[
+		(True,['\\'] 				,[buffadd],'F'),
+		],
+	'E':[
+		(True,['\\'] 				,[buffadd],'F'),
+		],
+	'E':[
+		(True,['\\'] 				,[buffadd],'F'),
+		],
+	'E':[
+		(True,['\\'] 				,[buffadd],'F'),
+		],
+	'E':[
+		(True,['\\'] 				,[buffadd],'F'),
+		],
+}
+
+def getNextState(currentState):
+	global state_converter
+	states_handle = state_converter[currentState] 
+	for state_struct in states_handle:
+		if state_struct[0] == 'default':
+			for method in state_struct[2]:
+				method()
+			return state_struct[3]
+		elif state_struct[0]:
+			if ch in state_struct[1]:
+				for method in state_struct[2]:
+					method()
+				return state_struct[3]
+		else:
+			if ch not in state_struct[1]:
+				for method in state_struct[2]:
+					method()
+				state_struct[2]()
+				return state_struct[3]
+
+def tokenizer():
 	global mLine
 	global mRow
 	global currentState
@@ -55,506 +198,35 @@ def tokenizer(ch):
 	global __TOKEN_ERROR__
 	global __TOKENIZE_SUCCESS__
 
-	while True:
-		if currentState == 'A':
-			if ch in __blankCharSet__ :
-				currentState = 'A'
-				return
-			elif ch in __letterSet__ or ch=='_' :
-				buf = buf + ch
-				currentState = 'B'#标识符方向
-				return
-			elif ch in __digitSet__ :
-				buf = buf + ch
-				currentState = 'C'#整数
-				return
-			elif ch == '\'' :
-				buf = buf + ch
-				currentState = 'D'#字符常量
-				return
-			elif ch == '\"' :
-				buf = buf + ch
-				currentState = 'G'#字符串常量
-				return
-			elif ch == '/' :
-				buf = buf + ch
-				currentState = 'K'#不确定，先按照注释处理
-				return
-			# 下面是操作符识别
-			elif ch =='+' :
-				buf = buf+ch
-				currentState = 'A+'
-				return
-			elif ch =='-' :
-				buf = buf+ch
-				currentState = 'A-'
-				return
-			elif ch=='*' :
-				buf = buf+ch
-				currentState = 'A*'
-				return
-			elif ch=='&' :
-				buf = buf+ch
-				currentState = 'A&'
-				return
-			elif ch=='^' :
-				buf = buf+ch
-				currentState = 'A^'
-				return
-			elif ch=='|' :
-				buf = buf+ch
-				currentState = 'A|'
-				return
-			elif ch=='=' :
-				buf = buf+ch
-				currentState = 'A='
-				return
-			elif ch=='!' :
-				buf = buf+ch
-				currentState = 'A!'
-				return
-			elif ch=='>' :
-				buf = buf+ch
-				currentState = 'A>'
-				return
-			elif ch=='<' :
-				buf = buf+ch
-				currentState = 'A<'
-				return
-			elif ch in __boardSet__ :
-				buf = ""
-				console_msg = console_msg+'('+ch+u' , 界符)\n'
-				result.append(ch)
-				currentState='A'
-				return
-			elif ch=='$' :
-				buf = buf + ch
-				currentState='$'
-			else:
-				compilerFail(u'不可识别的字符')
-				return
-
-		##############     状态B         #################
-		elif currentState == 'B':
-			if(ch == '_' or ch in __letterSet__ or ch in __digitSet__):
-				buf = buf+ch
-				currentState = 'B'
-				return
-			else:#可接受状态
-				if (buf in __keywordSet__):
-					console_msg = console_msg + '('+buf+u' , 关键字)\n'
-					result.append(buf)
-				else:
-					console_msg = console_msg + '('+buf+u' , 标识符)\n'
-					result.append('IDN')
-				buf = ""
-				currentState = 'A'
-				continue
-
-		##############     状态C         #################
-
-		elif currentState == 'C':
-			if(ch in __digitSet__):
-				buf = buf + ch
-				currentState = 'C'
-				return
-			elif(ch=='.'):
-				buf = buf+ch
-				currentState = 'P'
-				return
-			else:#可接受状态
-				console_msg = console_msg + '('+ buf + u' , 整数常量)\n'
-				result.append('INUM')
-				buf = ""
-				currentState = 'A'
-				continue
-
-		##############     状态D         #################
-		elif currentState == 'D':
-			if(ch!='\'' and ch!='\\'):
-				buf = buf+ch
-				currentState = 'E'
-				return
-			elif (ch!='\'' and ch=='\\'):
-				buf = buf+ch
-				currentState = 'F'
-				return
-			else:
-				compilerFail(u'空白或无效的字符')
-				return
-
-		##############     状态E        #################
-		elif currentState == 'E':
-			if(ch=='\''):
-				buf = buf+ch
-				currentState = 'H'
-				continue
-			else:
-				compilerFail(u'字符常量长度大于一')
-				return
-
-		##############     状态H        #################
-		elif currentState == 'H':
-			console_msg = console_msg + '(' + buf+ u' ,字符常量)\n'
-			result.append['CH']
-			buf = ""
-			currentState = 'A'
-			return
-
-		##############     状态F         #################
-		elif currentState == 'F':
-			if(ch in __switchCharSet__):
-				buf = buf + ch
-				currentState = 'E'
-				return
-			else:
-				compilerFail(u'无效的转义字符')		
-				return	
-
-		##############     状态G         #################
-		elif currentState == 'G':
-			if(ch!='\"' and ch!='\\'):
-				buf = buf+ch
-				currentState = 'G'
-				return
-			elif (ch!='\'' and ch=='\\'):
-				buf = buf+ch
-				currentState = 'I'
-				return
-			elif(ch=='\"'):
-				buf = buf+ch
-				currentState = 'J'
-
-		##############     状态I         #################
-		elif currentState == 'I':
-			if(ch in __switchCharSet__):
-				buf = buf+ch
-				currentState = 'G'
-				return
-			else:
-				compilerFail(u'无效的转义字符')	
-				return
-
-		##############     状态J         #################
-		elif currentState == 'J':
-			console_msg = console_msg + '(' + buf+ u' ,字符串常量)\n'
-			result.append('STR')
-			buf = ""
-			currentState = 'A'
-			return
-
-		##############     状态K         #################
-		elif currentState == 'K':
-			if(ch=='*'):
-				buf = buf[0:len(buf)-1]  #是注释，退去上一个/
-				currentState = 'L'
-				return
-			elif(ch=='/'):#单行注释
-				buf = buf[0:len(buf)-1]  #是注释，退去上一个/
-				currentState = 'O'
-				return
-			elif(ch=='='):
-				buf = buf+ch
-				currentState = 'B='
-				return
-			else:
-				console_msg = console_msg+'('+buf+u' ,运算符)\n'
-				result.append(buf)
-				buf = ""
-				currentState = 'A'
-				continue
-
-		##############     状态L         #################
-		elif currentState == 'L':
-			if(ch != '*'):
-				currentState = 'L'
-				return
-			elif(ch=='*'):
-				currentState = 'M'
-				return
-		##############     状态M         #################
-		elif currentState=='M':
-			if(ch=='/'):
-				currentState = 'N'
-				return
-			else:
-				currentState='L'
-
-		##############     状态N         #################
-		elif currentState=='N':
-			currentState = 'A'
-			return
-
-		##############     状态O         #################
-		elif currentState=='O':
-			if(ch=='\n'):
-				currentState = 'A'
-				return
-			else:
-				currentState='O'
-				return
-
-		##############     状态P         #################
-		elif currentState=='P':
-			if(ch in __digitSet__):
-				buf = buf+ch
-				currentState = 'Q'
-				return
-			else:
-				compilerFail(u'无效的浮点数')
-				return
-
-		##############     状态Q         #################
-		elif currentState=='Q':
-			if(ch in __digitSet__):
-				buf = buf+ch
-				currentState='Q'
-				return
-			else:
-				console_msg = console_msg+'('+buf+u' , 浮点数常量)\n'
-				result.append('FNUM')
-				buf=""
-				currentState='A'
-				continue
-
-		##############     状态A+         #################
-		elif currentState=='A+':
-			if(ch=='+' or ch=='='):
-				buf = buf+ch
-				currentState='B+'
-				return
-			else:
-				console_msg = console_msg+'('+buf+u' ,操作符)\n'
-				result.append(buf)
-				buf=""
-				currentState = 'A'
-				continue
-
-		##############     状态B+         #################
-		elif currentState=='B+':
-			console_msg = console_msg+'('+buf+u' ,操作符)\n'
-			result.append(buf)
-			buf = ""
-			currentState = 'A'
+	while True:#there could rewrite by state machine
+		currentState = getNextState(currentState)
+		if currentState == '$':
+			pass
+		elif currentState[0] == '_':
+			currentState = currentState[1:]
 			continue
-
-		##############     状态A-         #################
-		elif currentState=='A-':
-			if(ch=='-' or ch=='='):
-				buf = buf+ch
-				currentState='B-'
-				return
-			else:
-				console_msg = console_msg+'('+buf+u' ,操作符)\n'
-				result.append(buf)
-				buf=""
-				currentState = 'A'
-				continue
-
-		##############     状态B-         #################
-		elif currentState=='B-':
-			console_msg = console_msg+'('+buf+u' ,操作符)\n'
-			result.append(buf)
-			buf = ""
-			currentState = 'A'
-			continue
-
-		##############     状态A*         #################
-		elif currentState=='A*':
-			if(ch=='*' or ch=='='):
-				buf = buf+ch
-				currentState='B*'
-				return
-			else:
-				console_msg = console_msg+'('+buf+u' ,操作符)\n'
-				result.append(buf)
-				buf=""
-				currentState = 'A'
-				continue
-
-		##############     状态B*         #################
-		elif currentState=='B(':
-			console_msg = console_msg+'('+buf+u' ,操作符)\n'
-			result.append(buf)
-			buf = ""
-			currentState = 'A'
-			continue
-
-		##############     状态A&         #################
-		elif currentState=='A&':
-			if(ch=='&' or ch=='='):
-				buf = buf+ch
-				currentState='B&'
-				return
-			else:
-				console_msg = console_msg+'('+buf+u' ,操作符)\n'
-				result.append(buf)
-				buf=""
-				currentState = 'A'
-				continue
-
-		##############     状态B&         #################
-		elif currentState=='B&':
-			console_msg = console_msg+'('+buf+u' ,操作符)\n'
-			result.append(buf)
-			buf = ""
-			currentState = 'A'
-			continue
-
-		##############     状态A^         #################
-		elif currentState=='A^':
-			if(ch=='^' or ch=='='):
-				buf = buf+ch
-				currentState='B^'
-				return
-			else:
-				console_msg = console_msg+ '('+buf+u' ,操作符)\n'
-				result.append(buf)
-				buf=""
-				currentState = 'A'
-				continue
-
-		##############     状态B^         #################
-		elif currentState=='B^':
-			console_msg = console_msg+'('+buf+u' ,操作符)\n'
-			result.append(buf)
-			buf = ""
-			currentState = 'A'
-			continue
-
-		##############     状态A|         #################
-		elif currentState=='A|':
-			if(ch=='|' or ch=='='):
-				buf = buf+ch
-				currentState='B|'
-				return
-			else:
-				console_msg = console_msg+ '('+buf+u' ,操作符)\n'
-				result.append(buf)
-				buf=""
-				currentState = 'A'
-				continue
-
-		##############     状态B|         #################
-		elif currentState=='B|':
-			console_msg = console_msg+'('+buf+u' ,操作符)\n'
-			result.append(buf)
-			buf = ""
-			currentState = 'A'
-			continue
-
-		##############     状态A=         #################
-		elif currentState=='A=':
-			if(ch=='='):
-				buf = buf+ch
-				currentState='B='
-				return
-			else:
-				console_msg = console_msg+ '('+buf+u' ,操作符)\n'
-				result.append(buf)
-				buf=""
-				currentState = 'A'
-				continue
-
-		##############     状态B=         #################
-		elif currentState=='B=':
-			console_msg = console_msg+'('+buf+u' ,操作符)\n'
-			result.append(buf)
-			buf = ""
-			currentState = 'A'
-			continue
-
-		##############     状态A!         #################
-		elif currentState=='A!':
-			if(ch=='='):
-				buf = buf+ch
-				currentState='B!'
-				return
-			else:
-				console_msg = console_msg+ '('+buf+u' ,操作符)\n'
-				result.append(buf)
-				buf=""
-				currentState = 'A'
-				continue
-
-		##############     状态B!         #################
-		elif currentState=='B!':
-			console_msg = console_msg+'('+buf+u' ,操作符)\n'
-			result.append(buf)
-			buf = ""
-			currentState = 'A'
-			continue
-
-		##############     状态A>         #################
-		elif currentState=='A>':
-			if(ch=='='):
-				buf = buf+ch
-				currentState='B>'
-				return
-			else:
-				console_msg = console_msg+ '('+buf+u' ,操作符)\n'
-				result.append(buf)
-				buf=""
-				currentState = 'A'
-				continue
-
-		##############     状态B>         #################
-		elif currentState=='B!':
-			console_msg = console_msg+'('+buf+u' ,操作符)\n'
-			result.append(buf)
-			buf = ""
-			currentState = 'A'
-			continue
-
-		##############     状态A<         #################
-		elif currentState=='A<':
-			if(ch=='='):
-				buf = buf+ch
-				currentState='B<'
-				return
-			else:
-				console_msg = console_msg+ '('+buf+u' ,操作符)\n'
-				result.append(buf)
-				buf=""
-				currentState = 'A'
-				continue
-
-		##############     状态B<         #################
-		elif currentState=='B!':
-			console_msg = console_msg+'('+buf+u' ,操作符)\n'
-			result.append(buf)
-			buf = ""
-			currentState = 'A'
-			continue
-		
-		##############     状态$         #################
-		elif currentState=='$':
-			console_msg = console_msg+'('+buf+u' ,终结符)\n'
-			result.append(buf)
-			buf = ""
-			currentState = 'A'
-			return
-		
-		
-
+		else:
+			return		
 
 def scanner(text):
 	global mLine
 	global mRow
 	global buf
 	global console_msg
-	global currentState
+	global currentState,ch
 
 	buf = ""
 	console_msg = ""
 	for i in xrange(0,len(text)):
 		# console_msg=console_msg+'进入scanner\n'
 		mLine = mLine+1
-		tokenizer(text[i])
+		ch = text[i]
+		tokenizer()
 		if(text[i]=='\n'):
 			mRow += 1
 			mLine = 0
-	tokenizer('$')
+	ch = '$'
+	tokenizer()
 		
 			
 def main():

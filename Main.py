@@ -40,6 +40,7 @@ def compilerFail(status):
 	buf = ""
 
 
+#this method could rewrite by state machine
 def tokenizer(ch):
 	global buf
 	global mLine
@@ -56,77 +57,77 @@ def tokenizer(ch):
 
 	while True:
 		if currentState == 'A':
-			if(ch in __blankCharSet__ ):
+			if ch in __blankCharSet__ :
 				currentState = 'A'
 				return
-			elif(ch in __letterSet__ or ch=='_'):
+			elif ch in __letterSet__ or ch=='_' :
 				buf = buf + ch
 				currentState = 'B'#标识符方向
 				return
-			elif(ch in __digitSet__):
+			elif ch in __digitSet__ :
 				buf = buf + ch
 				currentState = 'C'#整数
 				return
-			elif(ch == '\''):
+			elif ch == '\'' :
 				buf = buf + ch
 				currentState = 'D'#字符常量
 				return
-			elif(ch == '\"'):
+			elif ch == '\"' :
 				buf = buf + ch
 				currentState = 'G'#字符串常量
 				return
-			elif(ch == '/'):
+			elif ch == '/' :
 				buf = buf + ch
 				currentState = 'K'#不确定，先按照注释处理
 				return
 			# 下面是操作符识别
-			elif(ch=='+'):
+			elif ch =='+' :
 				buf = buf+ch
 				currentState = 'A+'
 				return
-			elif(ch=='-'):
+			elif ch =='-' :
 				buf = buf+ch
 				currentState = 'A-'
 				return
-			elif(ch=='*'):
+			elif ch=='*' :
 				buf = buf+ch
 				currentState = 'A*'
 				return
-			elif(ch=='&'):
+			elif ch=='&' :
 				buf = buf+ch
 				currentState = 'A&'
 				return
-			elif(ch=='^'):
+			elif ch=='^' :
 				buf = buf+ch
 				currentState = 'A^'
 				return
-			elif(ch=='|'):
+			elif ch=='|' :
 				buf = buf+ch
 				currentState = 'A|'
 				return
-			elif(ch=='='):
+			elif ch=='=' :
 				buf = buf+ch
 				currentState = 'A='
 				return
-			elif(ch=='!'):
+			elif ch=='!' :
 				buf = buf+ch
 				currentState = 'A!'
 				return
-			elif(ch=='>'):
+			elif ch=='>' :
 				buf = buf+ch
 				currentState = 'A>'
 				return
-			elif(ch=='<'):
+			elif ch=='<' :
 				buf = buf+ch
 				currentState = 'A<'
 				return
-			elif(ch in __boardSet__):
+			elif ch in __boardSet__ :
 				buf = ""
 				console_msg = console_msg+'('+ch+u' , 界符)\n'
 				result.append(ch)
 				currentState='A'
 				return
-			elif(ch=='$'):
+			elif ch=='$' :
 				buf = buf + ch
 				currentState='$'
 			else:

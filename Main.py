@@ -50,17 +50,17 @@ def buffclr():
 
 def make_consol_msg(flag):
 	global console_msg,ch
-	console_msg += '(\t' + ch + '\t, '+flag+'\t)\n' 
+	console_msg += '(\t' + ch + '\t\t, '+flag+'\t\t)\n' 
 
 def make_consol_msg_buf(flag):
 	global console_msg,buf
-	console_msg += '(\t' + buf + '\t, '+flag+'\t)\n' 
+	console_msg += '(\t' + buf + '\t\t, '+flag+'\t)\n' 
 
 def resultadd():
 	global result,ch
 	result.append(ch)
 
-def resultadd(res):
+def resultaddString(res):
 	global result
 	result.append(res)
 
@@ -96,14 +96,14 @@ def defaultF():
 def endH_A():
 	global result
 	make_consol_msg_buf(u'字符常量')
-	result.append('CH')
+	resultaddString('CH')
 
 def defaultI():
 	compilerFail(u'无效的转义字符')
 
 def endJ_A():
 	make_consol_msg_buf(u'字符串常量')
-	resultadd('STR')
+	resultaddString('STR')
 
 def annotation():
 	global buf
@@ -112,51 +112,51 @@ def annotation():
 def defaultK():
 	global buf
 	make_consol_msg_buf(u'运算符')
-	resultadd(buf)
+	resultaddString(buf)
 
 def defaultP():
 	compilerFail(u'无效的浮点数')
 
 def defaultQ():
 	make_consol_msg_buf(u'浮点数常量')
-	resultadd('FNUM')
+	resultaddString('FNUM')
 
 def defaultAA():
 	global buf
 	make_consol_msg_buf(u'操作符')
-	resultadd(buf)
+	resultaddString(buf)
 
 def defaultBB():
 	global buf
 	make_consol_msg_buf(u'操作符')
-	resultadd(buf)
+	resultaddString(buf)
 
 def defaultEnd():
 	global buf
 	make_consol_msg_buf(u'终结符')
-	resultadd(buf)
+	resultaddString(buf)
 
 state_converter = {
 	'A':[###################   状态A   #############
-		(True,__blankCharSet__		,[],			'A'),
-		(True,__letterSet__ + [' ']	,[buffadd],		'B'),
-		(True,__digitSet__ 			,[buffadd],		'C'),
-		(True,['\''] 				,[buffadd],		'D'),
-		(True,['\"']				,[buffadd],		'G'),
-		(True,['/']		 			,[buffadd],		'K'),
-		(True,['+']		 			,[buffadd],		'A+'),
-		(True,['-']		 			,[buffadd],		'A-'),
-		(True,['*']		 			,[buffadd],		'A*'),
-		(True,['&']		 			,[buffadd],		'A&'),
-		(True,['^']		 			,[buffadd],		'A^'),
-		(True,['|']		 			,[buffadd],		'A|'),
-		(True,['=']		 			,[buffadd],		'A='),
-		(True,['!']		 			,[buffadd],		'A!'),
-		(True,['>']		 			,[buffadd],		'A>'),
-		(True,['<']		 			,[buffadd],		'A<'),
-		(True,__boardSet__ 			,[buffclr,endA_board,resultadd],'A'),
-		(True,['$']					,[buffadd],		'$'),
-		('default',[]				,[defaultA],	'A'),
+		(True, __blankCharSet__			, [],				'A'),
+		(True, __letterSet__ + [' ']	, [buffadd],		'B'),
+		(True, __digitSet__ 			, [buffadd],		'C'),
+		(True, ['\''] 					, [buffadd],		'D'),
+		(True, ['\"']					, [buffadd],		'G'),
+		(True, ['/']		 			, [buffadd],		'K'),
+		(True, ['+']		 			, [buffadd],		'A+'),
+		(True, ['-']		 			, [buffadd],		'A-'),
+		(True, ['*']		 			, [buffadd],		'A*'),
+		(True, ['&']		 			, [buffadd],		'A&'),
+		(True, ['^']		 			, [buffadd],		'A^'),
+		(True, ['|']		 			, [buffadd],		'A|'),
+		(True, ['=']		 			, [buffadd],		'A='),
+		(True, ['!']		 			, [buffadd],		'A!'),
+		(True, ['>']		 			, [buffadd],		'A>'),
+		(True, ['<']		 			, [buffadd],		'A<'),
+		(True, __boardSet__ 			, [buffclr,endA_board,resultadd],'A'),
+		(True, ['$']					, [buffadd],		'$'),
+		('default',[]					, [defaultA],		'A'),
 		],
 	'B':[###################   状态B   #############
 		(True,['_']+__letterSet__+__digitSet__	,[buffadd],'B'),
@@ -226,73 +226,73 @@ state_converter = {
 		],
 }
 state_converter.update({
-	'A+'[
+	'A+':[
 		(True,['+','=']				,[buffadd],		'B+'),
 		('default',[]				,[defaultAA, buffclr],'_A'),
 		],
-	'B+'[
+	'B+':[
 		('default',[]				,[defaultBB,buffclr],'_A')
 		],
-	'A-'[
+	'A-':[
 		(True,['-','=']				,[buffadd],		'B-'),
 		],
-	'A*'[
+	'A*':[
 		(True,['*','=']				,[buffadd],		'B*'),
 		('default',[]				,[defaultAA,buffclr],'_A'),
 		],
-	'B*'[
+	'B*':[
 		('default',[]				,[defaultBB,buffclr],'_A'),
 		],
-	'A&'[
+	'A&':[
 		(True,['&','=']				,[buffadd],		'B&'),
 		('default',[]				,[defaultAA,buffclr],'_A'),
 		],
-	'B&'[
+	'B&':[
 		('default',[]				,[defaultBB,buffclr],'_A'),
 		],
-	'A^'[
+	'A^':[
 		(True,['^','=']				,[buffadd],		'B^'),
 		('default',[]				,[defaultAA,buffclr],'_A'),
 		],
-	'B^'[
+	'B^':[
 		('default',[]				,[defaultBB,buffclr],'_A'),
 		],
-	'A|'[
+	'A|':[
 		(True,['|','=']				,[buffadd],		'B|'),
 		('default',[]				,[defaultAA,buffclr],'_A'),
 		],
-	'B|'[
+	'B|':[
 		('default',[]				,[defaultBB,buffclr],'_A'),
 		],
-	'A='[
+	'A=':[
 		(True,['=']					,[buffadd],		'B='),
 		('default',[]				,[defaultAA,buffclr],'_A'),
 		],
-	'B='[
+	'B=':[
 		('default',[]				,[defaultBB,buffclr],'_A'),
 		],
-	'A!'[
+	'A!':[
 		(True,['=']					,[buffadd],		'B!'),
 		('default',[]				,[defaultAA,buffclr],'_A'),
 		],
-	'B!'[
+	'B!':[
 		('default',[]				,[defaultBB,buffclr],'_A'),
 		],
-	'A>'[
+	'A>':[
 		(True,['=']					,[buffadd],		'B>'),
 		('default',[]				,[defaultAA,buffclr],'_A'),
 		],
-	'B>'[
+	'B>':[
 		('default',[]				,[defaultBB,buffclr],'_A'),
 		],
-	'A<'[
+	'A<':[
 		(True,['|','=']				,[buffadd],		'B<'),
 		('default',[]				,[defaultAA,buffclr],'_A'),
 		],
-	'B<'[
+	'B<':[
 		('default',[]				,[defaultBB,buffclr],'_A'),
 		],
-	'$'	[
+	'$'	:[
 		('default',[]				,[defaultEnd,buffclr],'_A'),
 		],
 })
@@ -300,6 +300,7 @@ state_converter.update({
 def getNextState(currentState):
 	global state_converter
 	states_handle = state_converter[currentState] 
+	# print currentState
 	for state_struct in states_handle:
 		if state_struct[0] == 'default':
 			for method in state_struct[2]:
@@ -332,7 +333,7 @@ def tokenizer():
 	while True:#there could rewrite by state machine
 		currentState = getNextState(currentState)
 		if currentState == '$':
-			pass
+			return
 		elif currentState[0] == '_':
 			currentState = currentState[1:]
 			continue

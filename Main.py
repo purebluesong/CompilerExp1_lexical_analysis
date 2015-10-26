@@ -60,6 +60,9 @@ def resultadd():
 	global result,ch
 	result.append(ch)
 
+def resultadd(res):
+	global result
+	result.append(res)
 
 def endA_board():
 	make_consol_msg(u'界符')
@@ -95,91 +98,204 @@ def endH_A():
 	make_consol_msg_buf(u'字符常量')
 	result.append('CH')
 
+def defaultI():
+	compilerFail(u'无效的转义字符')
+
+def endJ_A():
+	make_consol_msg_buf(u'字符串常量')
+	resultadd('STR')
+
+def annotation():
+	global buf
+	buf = buf[:-1]
+
+def defaultK():
+	global buf
+	make_consol_msg_buf(u'运算符')
+	resultadd(buf)
+
+def defaultP():
+	compilerFail(u'无效的浮点数')
+
+def defaultQ():
+	make_consol_msg_buf(u'浮点数常量')
+	resultadd('FNUM')
+
+def defaultAA():
+	global buf
+	make_consol_msg_buf(u'操作符')
+	resultadd(buf)
+
+def defaultBB():
+	global buf
+	make_consol_msg_buf(u'操作符')
+	resultadd(buf)
+
+def defaultEnd():
+	global buf
+	make_consol_msg_buf(u'终结符')
+	resultadd(buf)
 
 state_converter = {
 	'A':[###################   状态A   #############
-		(True,__blankCharSet__		,[],'A'),
-		(True,__letterSet__ + [' ']	,[buffadd],'B'),
-		(True,__digitSet__ 			,[buffadd],'C'),
-		(True,['\''] 				,[buffadd],'D'),
-		(True,['\"']				,[buffadd],'G'),
-		(True,['/']		 			,[buffadd],'K'),
-		(True,['+']		 			,[buffadd],'A+'),
-		(True,['-']		 			,[buffadd],'A-'),
-		(True,['*']		 			,[buffadd],'A*'),
-		(True,['&']		 			,[buffadd],'A&'),
-		(True,['^']		 			,[buffadd],'A^'),
-		(True,['|']		 			,[buffadd],'A|'),
-		(True,['=']		 			,[buffadd],'A='),
-		(True,['!']		 			,[buffadd],'A!'),
-		(True,['>']		 			,[buffadd],'A>'),
-		(True,['<']		 			,[buffadd],'A<'),
+		(True,__blankCharSet__		,[],			'A'),
+		(True,__letterSet__ + [' ']	,[buffadd],		'B'),
+		(True,__digitSet__ 			,[buffadd],		'C'),
+		(True,['\''] 				,[buffadd],		'D'),
+		(True,['\"']				,[buffadd],		'G'),
+		(True,['/']		 			,[buffadd],		'K'),
+		(True,['+']		 			,[buffadd],		'A+'),
+		(True,['-']		 			,[buffadd],		'A-'),
+		(True,['*']		 			,[buffadd],		'A*'),
+		(True,['&']		 			,[buffadd],		'A&'),
+		(True,['^']		 			,[buffadd],		'A^'),
+		(True,['|']		 			,[buffadd],		'A|'),
+		(True,['=']		 			,[buffadd],		'A='),
+		(True,['!']		 			,[buffadd],		'A!'),
+		(True,['>']		 			,[buffadd],		'A>'),
+		(True,['<']		 			,[buffadd],		'A<'),
 		(True,__boardSet__ 			,[buffclr,endA_board,resultadd],'A'),
-		(True,['$']					,[buffadd],'$')
-		('default',[]				,[defaultA],'A')
+		(True,['$']					,[buffadd],		'$'),
+		('default',[]				,[defaultA],	'A'),
 		],
 	'B':[###################   状态B   #############
 		(True,['_']+__letterSet__+__digitSet__	,[buffadd],'B'),
-		('default',[]				,[defaultB,buffclr],'_A')
+		('default',[]				,[defaultB,buffclr],'_A'),
 		],
 	'C':[###################   状态C   #############
-		(True,__digitSet__ 			,[buffadd],'C'),
-		(True,['.'] 				,[buffadd],'P'),
+		(True,__digitSet__ 			,[buffadd],		'C'),
+		(True,['.'] 				,[buffadd],		'P'),
 		('default',[] 				,[defaultC,buffclr],'_A'),
 		],
 	'D':[
-		(False,['\'','\\']			,[buffadd],'E'),
-		(True,['\\'] 				,[buffadd],'F'),
-		('default',[] 				,[defaultD],'A'),
+		(False,['\'','\\']			,[buffadd],		'E'),
+		(True,['\\'] 				,[buffadd],		'F'),
+		('default',[] 				,[defaultD],	'A'),
 		],
 	'E':[
-		(True,['\''] 				,[buffadd],'H'),
-		('default',)
+		(True,['\''] 				,[buffadd],		'H'),
+		('default',[]				,[defaultE],	'A'),
 		],
 	'F':[
-		(True,__switchCharSet__		,[buffadd],'E'),
-		('default',[] 				,[defaultF],'A'),
+		(True,__switchCharSet__		,[buffadd],		'E'),
+		('default',[] 				,[defaultF],	'A'),
 		],
 	'G':[
-		(False,['\\','\"'] 			,[buffadd],'G'),
-		(True,['\\'] 				,[buffadd],'I'),
-		(True,['\"'] 				,[buffadd],'J'),
+		(False,['\\','\"'] 			,[buffadd],		'G'),
+		(True,['\\'] 				,[buffadd],		'I'),
+		(True,['\"'] 				,[buffadd],		'J'),
 		],
 	'H':[
 		(False,[] 					,[endH_A,buffclr],'A'),
 		],
-
-
-
-
-	'E':[
-		(True,['\\'] 				,[buffadd],'F'),
+	'I':[
+		(True,__switchCharSet__		,[buffadd],		'G'),
+		('default',[]				,[defaultI],	'A'),
 		],
-	'E':[
-		(True,['\\'] 				,[buffadd],'F'),
+	'J':[
+		(False,[] 					,[endJ_A,buffclr],'A'),
 		],
-	'E':[
-		(True,['\\'] 				,[buffadd],'F'),
+	'K':[
+		(True,['*'] 				,[annotation],	'L'),
+		(True,['/'] 				,[annotation],	'O'),
+		(True,['='] 				,[buffadd],		'B='),
+		('default',[] 				,[defaultK,buffclr],'_A'),
 		],
-	'E':[
-		(True,['\\'] 				,[buffadd],'F'),
+	'L':[
+		(False,['*'] 				,[],			'L'),
+		(True,['*'] 				,[],			'M'),
 		],
-	'E':[
-		(True,['\\'] 				,[buffadd],'F'),
+	'M':[
+		(True,['/'] 				,[],			'N'),
+		('default',[] 				,[],			'L'),
 		],
-	'E':[
-		(True,['\\'] 				,[buffadd],'F'),
+	'N':[
+		('default',[] 				,[],			'A'),
 		],
-	'E':[
-		(True,['\\'] 				,[buffadd],'F'),
+	'O':[
+		(True,['\n'] 				,[],			'A'),
+		('default',[] 				,[],			'O'),
 		],
-	'E':[
-		(True,['\\'] 				,[buffadd],'F'),
+	'P':[
+		(True,__digitSet__			,[buffadd],		'Q'),
+		('default',[]				,[defaultP],	'A'),
 		],
-	'E':[
-		(True,['\\'] 				,[buffadd],'F'),
+	'Q':[
+		(True,__digitSet__			,[buffadd],		'Q'),
+		('default',[]				,[defaultQ,buffclr],'_A'),
 		],
 }
+state_converter.update({
+	'A+'[
+		(True,['+','=']				,[buffadd],		'B+'),
+		('default',[]				,[defaultAA, buffclr],'_A'),
+		],
+	'B+'[
+		('default',[]				,[defaultBB,buffclr],'_A')
+		],
+	'A-'[
+		(True,['-','=']				,[buffadd],		'B-'),
+		],
+	'A*'[
+		(True,['*','=']				,[buffadd],		'B*'),
+		('default',[]				,[defaultAA,buffclr],'_A'),
+		],
+	'B*'[
+		('default',[]				,[defaultBB,buffclr],'_A'),
+		],
+	'A&'[
+		(True,['&','=']				,[buffadd],		'B&'),
+		('default',[]				,[defaultAA,buffclr],'_A'),
+		],
+	'B&'[
+		('default',[]				,[defaultBB,buffclr],'_A'),
+		],
+	'A^'[
+		(True,['^','=']				,[buffadd],		'B^'),
+		('default',[]				,[defaultAA,buffclr],'_A'),
+		],
+	'B^'[
+		('default',[]				,[defaultBB,buffclr],'_A'),
+		],
+	'A|'[
+		(True,['|','=']				,[buffadd],		'B|'),
+		('default',[]				,[defaultAA,buffclr],'_A'),
+		],
+	'B|'[
+		('default',[]				,[defaultBB,buffclr],'_A'),
+		],
+	'A='[
+		(True,['=']					,[buffadd],		'B='),
+		('default',[]				,[defaultAA,buffclr],'_A'),
+		],
+	'B='[
+		('default',[]				,[defaultBB,buffclr],'_A'),
+		],
+	'A!'[
+		(True,['=']					,[buffadd],		'B!'),
+		('default',[]				,[defaultAA,buffclr],'_A'),
+		],
+	'B!'[
+		('default',[]				,[defaultBB,buffclr],'_A'),
+		],
+	'A>'[
+		(True,['=']					,[buffadd],		'B>'),
+		('default',[]				,[defaultAA,buffclr],'_A'),
+		],
+	'B>'[
+		('default',[]				,[defaultBB,buffclr],'_A'),
+		],
+	'A<'[
+		(True,['|','=']				,[buffadd],		'B<'),
+		('default',[]				,[defaultAA,buffclr],'_A'),
+		],
+	'B<'[
+		('default',[]				,[defaultBB,buffclr],'_A'),
+		],
+	'$'	[
+		('default',[]				,[defaultEnd,buffclr],'_A'),
+		],
+})
 
 def getNextState(currentState):
 	global state_converter
@@ -198,7 +314,6 @@ def getNextState(currentState):
 			if ch not in state_struct[1]:
 				for method in state_struct[2]:
 					method()
-				state_struct[2]()
 				return state_struct[3]
 
 def tokenizer():
